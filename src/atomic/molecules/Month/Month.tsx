@@ -6,9 +6,15 @@ type monthProps = {
     days: DateTime[]
     handleClick: any
     clickedDate?: DateTime
+    nextClickedDate?: DateTime
 }
 
-const Month = ({ days, handleClick, clickedDate }: monthProps) => {
+const Month = ({
+    days,
+    handleClick,
+    clickedDate,
+    nextClickedDate,
+}: monthProps) => {
     return (
         <div className={styles.calendarDays}>
             {days.map((date: DateTime) => (
@@ -17,6 +23,7 @@ const Month = ({ days, handleClick, clickedDate }: monthProps) => {
                     date={date}
                     onChange={handleClick}
                     clickedDate={clickedDate}
+                    nextClickedDate={nextClickedDate}
                 />
             ))}
         </div>

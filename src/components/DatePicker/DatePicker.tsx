@@ -1,6 +1,4 @@
-// import { populateArray } from "./DatePickerLogic";
 import styles from './DatePicker.module.css'
-import Day from '../../atomic/atoms/Day'
 import { DateTime } from 'luxon'
 import { populateArray } from '../../utils/DatePickerLogic'
 import { useState } from 'react'
@@ -13,6 +11,7 @@ export type DatePickerProps = {
 
 const DatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     const shownDate = fixedDate ? fixedDate : DateTime.now()
+
     const [luxonDate, setLuxonDate] = useState(shownDate)
     const [calendarList, setCalendarList] = useState(populateArray(luxonDate))
     const [clickedDate, setClickedDate] = useState(
@@ -28,6 +27,7 @@ const DatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
 
     const handleRightAngle = () => {
         const nextMonth = luxonDate.plus({ months: 1 })
+
         setLuxonDate(nextMonth)
         setCalendarList(populateArray(nextMonth))
     }

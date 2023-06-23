@@ -1,5 +1,5 @@
 import DatePicker from './components/DatePicker/DatePicker'
-import DoubleDatePicker from './components/DoubleDatePicket/DoubleDatePicker'
+import DoubleDatePicker from './components/DoubleDatePicker/DoubleDatePicker'
 
 function App() {
     return (

@@ -41,10 +41,10 @@ function generatePreviousMonthDates(
     return momentArray
 }
 
-function generateCurrentMonthDates(date: DateTime) {
+export function generateCurrentMonthDates(date: DateTime) {
     const momentArray = []
     const daysOfCurrentMonth = getDaysInCurrentMonth(date)
-    if (!daysOfCurrentMonth) return
+    if (!daysOfCurrentMonth) throw Error()
 
     for (let i = 0; i < daysOfCurrentMonth; i++) {
         const currentDate = date.startOf('month').plus({

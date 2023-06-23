@@ -1,9 +1,11 @@
-// import { populateArray } from "./DatePickerLogic";
 import styles from '../DatePicker/DatePicker.module.css'
-import Day from '../../atomic/atoms/Day'
 import { DateTime } from 'luxon'
-import { populateArray } from '../../utils/DatePickerLogic'
+import {
+    generateCurrentMonthDates,
+    populateArray,
+} from '../../utils/DatePickerLogic'
 import { useEffect, useState } from 'react'
+import Month from '../../atomic/molecules/Month/Month'
 
 export type DatePickerProps = {
     fixedDate?: DateTime
@@ -14,36 +16,50 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     const shownDate = fixedDate ? fixedDate : DateTime.now()
 
     const [currentDate, setCurrentDate] = useState(shownDate)
-    const [calendarList, setCalendarList] = useState(populateArray(currentDate))
+    const [calendarList, setCalendarList] = useState(
+        generateCurrentMonthDates(currentDate)
+    )
 
     const [nextDate, setNextDate] = useState(shownDate.plus({ months: 1 }))
-    const [calendarList2, setCalendarList2] = useState(populateArray(nextDate))
+    const [calendarList2, setCalendarList2] = useState(
+        generateCurrentMonthDates(nextDate)
+    )
 
     const [clickedDate, setClickedDate] = useState(
         fixedDate ? fixedDate : undefined
+    )
+
+    const [secondClickedDate, setSecondClickedDate] = useState<DateTime>(
+        undefined as unknown as DateTime
     )
 
     useEffect(() => {
         const nextDate = currentDate.plus({ months: 1 })
 
         setNextDate(nextDate)
-        setCalendarList2(populateArray(nextDate))
+        setCalendarList2(generateCurrentMonthDates(nextDate))
     }, [currentDate])
 
     const handleLeftAngle = () => {
         const previousMonth = currentDate.minus({ months: 1 })
 
         setCurrentDate(previousMonth)
-        setCalendarList(populateArray(previousMonth))
+        setCalendarList(generateCurrentMonthDates(previousMonth))
     }
 
     const handleRightAngle = () => {
         const nextMonth = currentDate.plus({ months: 1 })
         setCurrentDate(nextMonth)
-        setCalendarList(populateArray(nextMonth))
+        setCalendarList(generateCurrentMonthDates(nextMonth))
     }
 
     const handleClick = (date: DateTime) => {
+        if (clickedDate && clickedDate < date) {
+            setSecondClickedDate(date)
+            return
+        }
+
+        setSecondClickedDate(undefined as unknown as DateTime)
         setClickedDate(date)
     }
 
@@ -61,16 +77,12 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
                         })}
                     </div>
                 </div>
-                <div className={styles.calendarDays}>
-                    {calendarList.map((date: DateTime) => (
-                        <Day
-                            key={date.toISODate()}
-                            date={date}
-                            onChange={handleClick}
-                            clickedDate={clickedDate}
-                        />
-                    ))}
-                </div>
+                <Month
+                    days={calendarList}
+                    handleClick={handleClick}
+                    clickedDate={clickedDate}
+                    nextClickedDate={secondClickedDate}
+                />
             </div>
 
             <div className={styles.datePicker}>
@@ -85,16 +97,12 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
                         Next
                     </div>
                 </div>
-                <div className={styles.calendarDays}>
-                    {calendarList2.map((date: DateTime) => (
-                        <Day
-                            key={date.toISODate()}
-                            date={date}
-                            onChange={handleClick}
-                            clickedDate={clickedDate}
-                        />
-                    ))}
-                </div>
+                <Month
+                    days={calendarList2}
+                    handleClick={handleClick}
+                    clickedDate={clickedDate}
+                    nextClickedDate={secondClickedDate}
+                />
             </div>
         </div>
     )
