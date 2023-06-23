@@ -1,0 +1,20 @@
+.calendarDays {
+    @apply grid grid-cols-7 grid-rows-5 gap-2;
+}
+
+.datePicker {
+    @apply border-4 rounded-md m-4 py-2;
+}
+
+.doubleDatePicker {
+    @apply flex flex-row justify-center
+    border-4 rounded-md m-4 py-2;
+}
+
+.calendarHeader {
+    @apply flex flex-row justify-between px-3 rounded-md;
+}
+
+.angles {
+    @apply cursor-pointer bg-slate-300 rounded-md p-2;
+}

@@ -1,0 +1,7 @@
+.day {
+    @apply p-1 cursor-pointer text-center;
+}
+
+.clicked {
+    @apply rounded-full bg-orange-600;
+}
