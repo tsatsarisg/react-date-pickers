@@ -33,6 +33,10 @@ const DatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     }
 
     const handleClick = (date: DateTime) => {
+        if (clickedDate?.hasSame(date, 'day')) {
+            setClickedDate(undefined)
+            return
+        }
         setClickedDate(date)
     }
 

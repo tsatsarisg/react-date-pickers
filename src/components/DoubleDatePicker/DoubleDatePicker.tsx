@@ -1,9 +1,6 @@
 import styles from '../DatePicker/DatePicker.module.css'
 import { DateTime } from 'luxon'
-import {
-    generateCurrentMonthDates,
-    populateArray,
-} from '../../utils/DatePickerLogic'
+import { generateCurrentMonthDates } from '../../utils/DatePickerLogic'
 import { useEffect, useState } from 'react'
 import Month from '../../atomic/molecules/Month/Month'
 
@@ -58,8 +55,12 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
             setSecondClickedDate(date)
             return
         }
-
         setSecondClickedDate(undefined as unknown as DateTime)
+
+        if (clickedDate?.hasSame(date, 'day')) {
+            setClickedDate(undefined)
+            return
+        }
         setClickedDate(date)
     }
 
