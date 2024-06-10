@@ -1,12 +1,23 @@
 {
-    "name": "react-date-pickers",
+    "name": "@tsatsarisg/react-date-pickers",
     "version": "1.0.0",
-    "scripts": {
-        "build:css": "npx tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify",
-        "build": "rollup -c"
-    },
+    "description": "A collection of reusable React Date pickers",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
+    "keywords": [
+        "react",
+        "date picker"
+    ],
+    "author": "George Tsatsaris <your.email@example.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tsatsarisg/date-picker.git"
+    },
+    "scripts": {
+        "build": "npm run build:css && rollup -c",
+        "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/tailwind.css --minify"
+    },
     "files": [
         "dist",
         "src"
@@ -14,8 +25,7 @@
     "dependencies": {
         "luxon": "^3.3.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-scripts": "5.0.1"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^26.0.1",
@@ -38,17 +48,5 @@
     "peerDependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
     }
 }
