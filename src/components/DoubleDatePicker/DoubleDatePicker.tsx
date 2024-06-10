@@ -53,6 +53,10 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     const handleClick = (date: DateTime) => {
         if (clickedDate && clickedDate < date) {
             setSecondClickedDate(date)
+            onChange({
+                startDate: clickedDate,
+                endDate: date,
+            })
             return
         }
         setSecondClickedDate(undefined as unknown as DateTime)

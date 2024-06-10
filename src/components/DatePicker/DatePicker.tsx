@@ -1,3 +1,5 @@
+import '../../index.css'
+
 import styles from './DatePicker.module.css'
 import { DateTime } from 'luxon'
 import { populateArray } from '../../utils/DatePickerLogic'
@@ -38,6 +40,7 @@ const DatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
             return
         }
         setClickedDate(date)
+        onChange(date)
     }
 
     return (
