@@ -1,5 +1,5 @@
 .day {
-    @apply p-2 cursor-pointer text-center;
+    @apply p-2 cursor-pointer text-center text-black;
 }
 
 .clicked {

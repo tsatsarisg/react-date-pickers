@@ -1,4 +1,4 @@
-import './index.css'
+import './tailwind.css'
 
 import DoubleDatePicker from './components/DoubleDatePicker/DoubleDatePicker'
 import DatePicker from './components/DatePicker/DatePicker'

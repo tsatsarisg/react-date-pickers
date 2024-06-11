@@ -1,5 +1,3 @@
-import '../../index.css'
-
 import styles from './DatePicker.module.css'
 import { DateTime } from 'luxon'
 import { populateArray } from '../../utils/DatePickerLogic'

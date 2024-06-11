@@ -1,11 +1,10 @@
+const packageJson = require('./package.json')
 import typescript from 'rollup-plugin-typescript2'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 import postcss from 'rollup-plugin-postcss'
 import { terser } from 'rollup-plugin-terser'
-
-const packageJson = require('./package.json')
 
 export default {
     input: 'src/index.ts',
@@ -29,9 +28,16 @@ export default {
         commonjs(),
         typescript({ useTsconfigDeclarationDir: true }),
         postcss({
+            config: {
+                path: './postcss.config.js',
+            },
             extensions: ['.css'],
+            minimize: true,
+            inject: {
+                insertAt: 'top',
+            },
         }),
-        terser(), // Minify the output
+        terser(),
     ],
     external: ['react', 'react-dom'],
 }
