@@ -1,6 +1,6 @@
 {
     "name": "@tsatsarisg/react-date-pickers",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A collection of reusable React Date pickers",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
