@@ -5,17 +5,20 @@ import { useState } from 'react'
 import Month from '../../atomic/molecules/Month/Month'
 
 export type DatePickerProps = {
-    fixedDate?: DateTime
-    onChange?: any
+    startDate?: DateTime
+    onChange?: (startDate?: DateTime) => void
 }
 
-const DatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
-    const shownDate = fixedDate ? fixedDate : DateTime.now()
+const DatePicker = ({
+    startDate,
+    onChange = () => undefined,
+}: DatePickerProps) => {
+    const shownDate = startDate ? startDate : DateTime.now()
 
     const [luxonDate, setLuxonDate] = useState(shownDate)
     const [calendarList, setCalendarList] = useState(populateArray(luxonDate))
     const [clickedDate, setClickedDate] = useState(
-        fixedDate ? fixedDate : undefined
+        startDate ? startDate : undefined
     )
 
     const handleLeftAngle = () => {

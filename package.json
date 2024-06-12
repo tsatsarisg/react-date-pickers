@@ -8,19 +8,21 @@
         "react",
         "date picker"
     ],
-    "author": "George Tsatsaris <your.email@example.com>",
-    "license": "MIT",
+    "author": "George Tsatsaris",
+    "license": "ISC",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/tsatsarisg/react-date-pickers.git"
+    },
+    "publishConfig": {
+        "access": "public"
     },
     "scripts": {
         "dev": "rollup -c --watch",
         "build": "rollup -c"
     },
     "files": [
-        "dist",
-        "src"
+        "dist"
     ],
     "dependencies": {
         "luxon": "^3.3.0",

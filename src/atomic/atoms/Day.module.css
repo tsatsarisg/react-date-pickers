@@ -3,9 +3,9 @@
 }
 
 .clicked {
-    @apply rounded-lg bg-orange-600;
+    @apply rounded-lg bg-slate-300;
 }
 
 .betweenClicked {
-    @apply bg-orange-300 rounded-lg;
+    @apply bg-slate-100 rounded-lg;
 }

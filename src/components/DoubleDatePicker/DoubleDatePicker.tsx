@@ -4,13 +4,18 @@ import { generateCurrentMonthDates } from '../../utils/DatePickerLogic'
 import { useEffect, useState } from 'react'
 import Month from '../../atomic/molecules/Month/Month'
 
-export type DatePickerProps = {
-    fixedDate?: DateTime
-    onChange?: any
+export type DoubleDatePickerProps = {
+    startDate?: DateTime
+    endDate?: DateTime
+    onChange?: (startDate?: DateTime, endDate?: DateTime) => void
 }
 
-const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
-    const shownDate = fixedDate ? fixedDate : DateTime.now()
+const DoubleDatePicker = ({
+    startDate,
+    endDate,
+    onChange = () => undefined,
+}: DoubleDatePickerProps) => {
+    const shownDate = startDate ? startDate : DateTime.now()
 
     const [currentDate, setCurrentDate] = useState(shownDate)
     const [calendarList, setCalendarList] = useState(
@@ -23,11 +28,11 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     )
 
     const [clickedDate, setClickedDate] = useState(
-        fixedDate ? fixedDate : undefined
+        startDate ? startDate : undefined
     )
 
-    const [secondClickedDate, setSecondClickedDate] = useState<DateTime>(
-        undefined as unknown as DateTime
+    const [secondClickedDate, setSecondClickedDate] = useState(
+        endDate ? endDate : undefined
     )
 
     useEffect(() => {
@@ -53,13 +58,10 @@ const DoubleDatePicker = ({ fixedDate, onChange }: DatePickerProps) => {
     const handleClick = (date: DateTime) => {
         if (clickedDate && clickedDate < date) {
             setSecondClickedDate(date)
-            onChange({
-                startDate: clickedDate,
-                endDate: date,
-            })
+            onChange(startDate, endDate)
             return
         }
-        setSecondClickedDate(undefined as unknown as DateTime)
+        setSecondClickedDate(undefined)
 
         if (clickedDate?.hasSame(date, 'day')) {
             setClickedDate(undefined)
