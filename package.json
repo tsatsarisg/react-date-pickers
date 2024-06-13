@@ -6,7 +6,11 @@
     "module": "dist/esm/index.js",
     "keywords": [
         "react",
-        "date picker"
+        "date picker",
+        "react datepicker",
+        "calendar",
+        "date",
+        "datetime"
     ],
     "author": "George Tsatsaris",
     "license": "ISC",
