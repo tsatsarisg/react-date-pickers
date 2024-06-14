@@ -12,13 +12,13 @@ export default {
         {
             file: packageJson.main,
             format: 'cjs',
-            sourcemap: true,
+            sourcemap: false,
             exports: 'named',
         },
         {
             file: packageJson.module,
             format: 'esm',
-            sourcemap: true,
+            sourcemap: false,
             exports: 'named',
         },
     ],
