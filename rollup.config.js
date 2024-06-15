@@ -18,7 +18,10 @@ export default {
     plugins: [
         peerDepsExternal(),
         resolve(),
-        typescript({ useTsconfigDeclarationDir: true }),
+        typescript({
+            tsconfig: './tsconfig.json',
+            useTsconfigDeclarationDir: true,
+        }),
         postcss({
             config: {
                 path: './postcss.config.js',
