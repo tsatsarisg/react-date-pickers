@@ -45,6 +45,10 @@ export interface CalendarBaseProps {
   locale?: Partial<LocaleConfig>;
   /** Called when month changes */
   onMonthChange?: (date: CalendarDate) => void;
+  /** Unique identifier for form association */
+  id?: string;
+  /** Whether the picker is disabled */
+  disabled?: boolean;
 }
 
 /** Props for single date picker */
@@ -57,6 +61,12 @@ export interface DatePickerProps extends CalendarBaseProps {
   onChange?: (date: CalendarDate | null) => void;
   /** Accessible label */
   'aria-label'?: string;
+  /** Day the week starts on (0 = Sunday, 1 = Monday, etc.) */
+  weekStartsOn?: WeekDay;
+  /** Custom header component */
+  header?: React.ReactNode;
+  /** Custom footer component */
+  footer?: React.ReactNode;
 }
 
 /** Props for date range picker */
@@ -69,45 +79,35 @@ export interface DateRangePickerProps extends CalendarBaseProps {
   onChange?: (range: DateRange) => void;
   /** Accessible label */
   'aria-label'?: string;
+  /** Day the week starts on */
+  weekStartsOn?: WeekDay;
+  /** Number of months to display */
+  numberOfMonths?: 1 | 2;
 }
 
 /** Props for the Day component */
 export interface DayProps {
   date: CalendarDate;
-  isSelected?: boolean;
-  isInRange?: boolean;
-  isRangeStart?: boolean;
-  isRangeEnd?: boolean;
-  isToday?: boolean;
-  isDisabled?: boolean;
-  isOutsideMonth?: boolean;
-  onClick?: (date: CalendarDate) => void;
-  onKeyDown?: (event: React.KeyboardEvent, date: CalendarDate) => void;
-  tabIndex?: number;
+  /** Custom class name */
+  className?: string;
+  /** Override the current month for display purposes (used in dual-month views) */
+  overrideCurrentMonth?: CalendarDate;
 }
 
 /** Props for the Month grid component */
 export interface MonthGridProps {
-  days: CalendarDate[];
-  selectedDate?: CalendarDate | null;
-  selectedRange?: DateRange;
-  currentMonth: CalendarDate;
-  onDayClick: (date: CalendarDate) => void;
-  onKeyDown?: (event: React.KeyboardEvent, date: CalendarDate) => void;
-  minDate?: CalendarDate;
-  maxDate?: CalendarDate;
-  disabledDates?: CalendarDate[];
-  focusedDate?: CalendarDate;
+  /** Custom class name */
+  className?: string;
 }
 
 /** Props for the Calendar Header */
 export interface CalendarHeaderProps {
-  currentMonth: CalendarDate;
-  onPreviousMonth: () => void;
-  onNextMonth: () => void;
-  canGoToPreviousMonth?: boolean;
-  canGoToNextMonth?: boolean;
-  locale?: Partial<LocaleConfig>;
+  /** Custom class name */
+  className?: string;
+  /** Whether to show the previous month button */
+  showPreviousButton?: boolean;
+  /** Whether to show the next month button */
+  showNextButton?: boolean;
 }
 
 // ============================================

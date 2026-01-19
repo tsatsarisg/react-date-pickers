@@ -30,6 +30,10 @@ export interface DatePickerProps {
   header?: ReactNode;
   /** Custom footer component */
   footer?: ReactNode;
+  /** Unique identifier for form association */
+  id?: string;
+  /** Whether the picker is disabled */
+  disabled?: boolean;
 }
 
 export function DatePicker({
@@ -45,6 +49,8 @@ export function DatePicker({
   'aria-label': ariaLabel = 'Date picker',
   header,
   footer,
+  id,
+  disabled = false,
 }: DatePickerProps) {
   return (
     <CalendarProvider
@@ -58,12 +64,15 @@ export function DatePicker({
       weekStartsOn={weekStartsOn}
     >
       <div
+        id={id}
         className={clsx(
           'inline-block rounded-xl border border-gray-200 bg-white p-4 shadow-lg',
+          disabled && 'pointer-events-none opacity-50',
           className
         )}
         role="application"
         aria-label={ariaLabel}
+        aria-disabled={disabled}
       >
         {header ?? <CalendarHeader />}
         <MonthGrid />

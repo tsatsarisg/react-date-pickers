@@ -1,15 +1,17 @@
-import { useCallback, type KeyboardEvent } from 'react';
+import { useCallback, useMemo, type KeyboardEvent } from 'react';
 import { clsx } from 'clsx';
 import { type CalendarDate } from '../../types';
-import { isSameMonth, today, isSameDay, toISOString, addDays } from '../../utils/date';
+import { isSameMonth, today, isSameDay, toISOString, addDays, addMonths, getDaysInMonth, createDate, isDateDisabled } from '../../utils/date';
 import { useCalendarContext } from '../../context/CalendarContext';
 
 interface DayProps {
   date: CalendarDate;
   className?: string;
+  /** Override the current month for display purposes (used in dual-month views) */
+  overrideCurrentMonth?: CalendarDate;
 }
 
-export function Day({ date, className }: DayProps) {
+export function Day({ date, className, overrideCurrentMonth }: DayProps) {
   const {
     currentMonth,
     selectDate,
@@ -22,9 +24,13 @@ export function Day({ date, className }: DayProps) {
     setFocusedDate,
     setCurrentMonth,
     isRangeMode,
+    locale,
+    minDate,
+    maxDate,
   } = useCalendarContext();
 
-  const isCurrentMonth = isSameMonth(date, currentMonth);
+  const displayMonth = overrideCurrentMonth ?? currentMonth;
+  const isCurrentMonth = isSameMonth(date, displayMonth);
   const isToday = isSameDay(date, today());
   const disabled = isDisabled(date);
   const selected = isSelected(date);
@@ -33,11 +39,33 @@ export function Day({ date, className }: DayProps) {
   const rangeEnd = isRangeEnd(date);
   const isFocused = isSameDay(date, focusedDate);
 
+  // Internationalized aria-label
+  const ariaLabel = useMemo(() => {
+    const d = new Date(date.year, date.month - 1, date.day);
+    return d.toLocaleDateString(locale.locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, [date, locale.locale]);
+
   const handleClick = useCallback(() => {
     if (!disabled) {
       selectDate(date);
     }
   }, [disabled, selectDate, date]);
+
+  // Clamp date to min/max boundaries
+  const clampDate = useCallback((newDate: CalendarDate): CalendarDate => {
+    if (minDate && isDateDisabled(newDate, minDate, undefined, undefined)) {
+      return minDate;
+    }
+    if (maxDate && isDateDisabled(newDate, undefined, maxDate, undefined)) {
+      return maxDate;
+    }
+    return newDate;
+  }, [minDate, maxDate]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -45,16 +73,46 @@ export function Day({ date, className }: DayProps) {
 
       switch (event.key) {
         case 'ArrowLeft':
-          newFocusedDate = addDays(date, -1);
+          newFocusedDate = clampDate(addDays(date, -1));
           break;
         case 'ArrowRight':
-          newFocusedDate = addDays(date, 1);
+          newFocusedDate = clampDate(addDays(date, 1));
           break;
         case 'ArrowUp':
-          newFocusedDate = addDays(date, -7);
+          newFocusedDate = clampDate(addDays(date, -7));
           break;
         case 'ArrowDown':
-          newFocusedDate = addDays(date, 7);
+          newFocusedDate = clampDate(addDays(date, 7));
+          break;
+        case 'Home':
+          // First day of month
+          newFocusedDate = clampDate(createDate(date.year, date.month, 1));
+          break;
+        case 'End':
+          // Last day of month
+          newFocusedDate = clampDate(createDate(date.year, date.month, getDaysInMonth(date.year, date.month)));
+          break;
+        case 'PageUp':
+          // Same day, previous month (or closest valid date)
+          if (event.shiftKey) {
+            // Previous year
+            newFocusedDate = clampDate(createDate(date.year - 1, date.month, Math.min(date.day, getDaysInMonth(date.year - 1, date.month))));
+          } else {
+            const prevMonth = addMonths(date, -1);
+            const maxDay = getDaysInMonth(prevMonth.year, prevMonth.month);
+            newFocusedDate = clampDate(createDate(prevMonth.year, prevMonth.month, Math.min(date.day, maxDay)));
+          }
+          break;
+        case 'PageDown':
+          // Same day, next month (or closest valid date)
+          if (event.shiftKey) {
+            // Next year
+            newFocusedDate = clampDate(createDate(date.year + 1, date.month, Math.min(date.day, getDaysInMonth(date.year + 1, date.month))));
+          } else {
+            const nextMonth = addMonths(date, 1);
+            const maxDay = getDaysInMonth(nextMonth.year, nextMonth.month);
+            newFocusedDate = clampDate(createDate(nextMonth.year, nextMonth.month, Math.min(date.day, maxDay)));
+          }
           break;
         case 'Enter':
         case ' ':
@@ -73,7 +131,7 @@ export function Day({ date, className }: DayProps) {
         }
       }
     },
-    [date, handleClick, setFocusedDate, setCurrentMonth, currentMonth]
+    [date, handleClick, setFocusedDate, setCurrentMonth, currentMonth, clampDate]
   );
 
   return (
@@ -107,7 +165,7 @@ export function Day({ date, className }: DayProps) {
       onKeyDown={handleKeyDown}
       disabled={disabled}
       tabIndex={isFocused ? 0 : -1}
-      aria-label={`${date.day}, ${date.month}/${date.year}`}
+      aria-label={ariaLabel}
       aria-selected={selected || rangeStart || rangeEnd}
       aria-disabled={disabled}
       role="gridcell"
