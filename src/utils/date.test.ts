@@ -12,6 +12,13 @@ import {
   generateCalendarDays,
   toISOString,
   fromISOString,
+  isWithinRange,
+  isDateDisabled,
+  startOfMonth,
+  getWeekday,
+  formatMonthYear,
+  formatDate,
+  getWeekdayNames,
 } from './date';
 
 describe('date utilities', () => {
@@ -166,6 +173,204 @@ describe('date utilities', () => {
 
     it('returns null for invalid string', () => {
       expect(fromISOString('invalid')).toBeNull();
+    });
+
+    it('pads single digit month and day', () => {
+      const date = createDate(2026, 3, 5);
+      expect(toISOString(date)).toBe('2026-03-05');
+    });
+  });
+
+  describe('isWithinRange', () => {
+    it('returns true when date is within range', () => {
+      const range = {
+        start: createDate(2026, 1, 10),
+        end: createDate(2026, 1, 20),
+      };
+      const date = createDate(2026, 1, 15);
+      expect(isWithinRange(date, range)).toBe(true);
+    });
+
+    it('returns true when date equals start', () => {
+      const range = {
+        start: createDate(2026, 1, 10),
+        end: createDate(2026, 1, 20),
+      };
+      expect(isWithinRange(createDate(2026, 1, 10), range)).toBe(true);
+    });
+
+    it('returns true when date equals end', () => {
+      const range = {
+        start: createDate(2026, 1, 10),
+        end: createDate(2026, 1, 20),
+      };
+      expect(isWithinRange(createDate(2026, 1, 20), range)).toBe(true);
+    });
+
+    it('returns false when date is before range', () => {
+      const range = {
+        start: createDate(2026, 1, 10),
+        end: createDate(2026, 1, 20),
+      };
+      expect(isWithinRange(createDate(2026, 1, 5), range)).toBe(false);
+    });
+
+    it('returns false when date is after range', () => {
+      const range = {
+        start: createDate(2026, 1, 10),
+        end: createDate(2026, 1, 20),
+      };
+      expect(isWithinRange(createDate(2026, 1, 25), range)).toBe(false);
+    });
+
+    it('returns false when start is null', () => {
+      const range = { start: null, end: createDate(2026, 1, 20) };
+      expect(isWithinRange(createDate(2026, 1, 15), range)).toBe(false);
+    });
+
+    it('returns false when end is null', () => {
+      const range = { start: createDate(2026, 1, 10), end: null };
+      expect(isWithinRange(createDate(2026, 1, 15), range)).toBe(false);
+    });
+  });
+
+  describe('isDateDisabled', () => {
+    it('returns true when date is before minDate', () => {
+      const date = createDate(2026, 1, 5);
+      const minDate = createDate(2026, 1, 10);
+      expect(isDateDisabled(date, minDate)).toBe(true);
+    });
+
+    it('returns true when date is after maxDate', () => {
+      const date = createDate(2026, 1, 25);
+      const maxDate = createDate(2026, 1, 20);
+      expect(isDateDisabled(date, undefined, maxDate)).toBe(true);
+    });
+
+    it('returns true when date is in disabledDates', () => {
+      const date = createDate(2026, 1, 15);
+      const disabledDates = [createDate(2026, 1, 15), createDate(2026, 1, 20)];
+      expect(isDateDisabled(date, undefined, undefined, disabledDates)).toBe(true);
+    });
+
+    it('returns false when date is valid', () => {
+      const date = createDate(2026, 1, 15);
+      const minDate = createDate(2026, 1, 1);
+      const maxDate = createDate(2026, 1, 31);
+      expect(isDateDisabled(date, minDate, maxDate)).toBe(false);
+    });
+  });
+
+  describe('startOfMonth', () => {
+    it('returns first day of month', () => {
+      const date = createDate(2026, 1, 19);
+      const result = startOfMonth(date);
+      expect(result.day).toBe(1);
+      expect(result.month).toBe(1);
+      expect(result.year).toBe(2026);
+    });
+  });
+
+  describe('getWeekday', () => {
+    it('returns correct weekday', () => {
+      // January 19, 2026 is a Monday (1)
+      const date = createDate(2026, 1, 19);
+      expect(getWeekday(date)).toBe(1);
+    });
+
+    it('returns Sunday as 0', () => {
+      // January 18, 2026 is a Sunday
+      const date = createDate(2026, 1, 18);
+      expect(getWeekday(date)).toBe(0);
+    });
+  });
+
+  describe('formatMonthYear', () => {
+    it('formats month and year with default locale', () => {
+      const date = createDate(2026, 1, 15);
+      const result = formatMonthYear(date);
+      expect(result).toBe('January 2026');
+    });
+
+    it('formats with custom locale', () => {
+      const date = createDate(2026, 1, 15);
+      const result = formatMonthYear(date, { locale: 'es-ES' });
+      expect(result).toContain('2026');
+    });
+  });
+
+  describe('formatDate', () => {
+    it('formats date with default locale', () => {
+      const date = createDate(2026, 1, 19);
+      const result = formatDate(date);
+      expect(result).toMatch(/01.*19.*2026/);
+    });
+  });
+
+  describe('getWeekdayNames', () => {
+    it('returns array of 7 weekday names', () => {
+      const names = getWeekdayNames();
+      expect(names).toHaveLength(7);
+    });
+
+    it('starts with Sunday when weekStartsOn is 0', () => {
+      const names = getWeekdayNames({ weekStartsOn: 0 });
+      expect(names[0]).toMatch(/sun/i);
+    });
+
+    it('starts with Monday when weekStartsOn is 1', () => {
+      const names = getWeekdayNames({ weekStartsOn: 1 });
+      expect(names[0]).toMatch(/mon/i);
+    });
+
+    it('uses custom dayNamesShort when provided', () => {
+      const customNames = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+      const names = getWeekdayNames({ dayNamesShort: customNames });
+      expect(names).toEqual(customNames);
+    });
+  });
+
+  describe('isBefore edge cases', () => {
+    it('compares different years', () => {
+      expect(isBefore(createDate(2025, 6, 15), createDate(2026, 1, 1))).toBe(true);
+      expect(isBefore(createDate(2027, 1, 1), createDate(2026, 12, 31))).toBe(false);
+    });
+
+    it('compares different months in same year', () => {
+      expect(isBefore(createDate(2026, 1, 15), createDate(2026, 2, 1))).toBe(true);
+      expect(isBefore(createDate(2026, 3, 1), createDate(2026, 2, 28))).toBe(false);
+    });
+  });
+
+  describe('isAfter edge cases', () => {
+    it('compares different years', () => {
+      expect(isAfter(createDate(2027, 1, 1), createDate(2026, 12, 31))).toBe(true);
+      expect(isAfter(createDate(2025, 12, 31), createDate(2026, 1, 1))).toBe(false);
+    });
+
+    it('compares different months in same year', () => {
+      expect(isAfter(createDate(2026, 3, 1), createDate(2026, 2, 28))).toBe(true);
+      expect(isAfter(createDate(2026, 1, 31), createDate(2026, 2, 1))).toBe(false);
+    });
+  });
+
+  describe('generateCalendarDays with different weekStartsOn', () => {
+    it('generates correct layout when week starts on Monday', () => {
+      const month = createDate(2026, 1, 1);
+      const days = generateCalendarDays(month, 1);
+      expect(days.length).toBe(42);
+      
+      // First day should be from previous month if needed
+      const firstDay = days[0];
+      expect(firstDay).toBeDefined();
+    });
+
+    it('handles months that start on the weekStartsOn day', () => {
+      // Find a month that starts on a specific day
+      const month = createDate(2026, 6, 1); // June 1, 2026 is a Monday
+      const days = generateCalendarDays(month, 1);
+      expect(days[0].month).toBe(6);
+      expect(days[0].day).toBe(1);
     });
   });
 });
