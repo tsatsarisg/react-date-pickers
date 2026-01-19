@@ -1,72 +1,76 @@
-import styles from './DatePicker.module.css'
-import { DateTime } from 'luxon'
-import { populateArray } from '../../utils/DatePickerLogic'
-import { useState } from 'react'
-import Month from '../../atomic/molecules/Month/Month'
+import { type ReactNode } from 'react';
+import { CalendarProvider } from '../../context/CalendarContext';
+import { CalendarHeader } from '../CalendarHeader';
+import { MonthGrid } from '../MonthGrid';
+import { type CalendarDate, type LocaleConfig, type WeekDay } from '../../types';
+import { clsx } from 'clsx';
 
-export type DatePickerProps = {
-    startDate?: DateTime
-    onChange?: (startDate?: DateTime) => void
+export interface DatePickerProps {
+  /** Currently selected date (controlled) */
+  value?: CalendarDate | null;
+  /** Default date (uncontrolled) */
+  defaultValue?: CalendarDate;
+  /** Called when date changes */
+  onChange?: (date: CalendarDate | null) => void;
+  /** Minimum selectable date */
+  minDate?: CalendarDate;
+  /** Maximum selectable date */
+  maxDate?: CalendarDate;
+  /** Array of disabled dates */
+  disabledDates?: CalendarDate[];
+  /** Locale settings */
+  locale?: Partial<LocaleConfig>;
+  /** Day the week starts on (0 = Sunday, 1 = Monday, etc.) */
+  weekStartsOn?: WeekDay;
+  /** Additional class name */
+  className?: string;
+  /** Accessible label */
+  'aria-label'?: string;
+  /** Custom header component */
+  header?: ReactNode;
+  /** Custom footer component */
+  footer?: ReactNode;
 }
 
-const DatePicker = ({
-    startDate,
-    onChange = () => undefined,
-}: DatePickerProps) => {
-    const shownDate = startDate ? startDate : DateTime.now()
-
-    const [luxonDate, setLuxonDate] = useState(shownDate)
-    const [calendarList, setCalendarList] = useState(populateArray(luxonDate))
-    const [clickedDate, setClickedDate] = useState(
-        startDate ? startDate : undefined
-    )
-
-    const handleLeftAngle = () => {
-        const previousMonth = luxonDate.minus({ months: 1 })
-
-        setLuxonDate(previousMonth)
-        setCalendarList(populateArray(previousMonth))
-    }
-
-    const handleRightAngle = () => {
-        const nextMonth = luxonDate.plus({ months: 1 })
-
-        setLuxonDate(nextMonth)
-        setCalendarList(populateArray(nextMonth))
-    }
-
-    const handleClick = (date: DateTime) => {
-        if (clickedDate?.hasSame(date, 'day')) {
-            setClickedDate(undefined)
-            return
-        }
-        setClickedDate(date)
-        onChange(date)
-    }
-
-    return (
-        <div data-testid="datePicker" className={styles.datePicker}>
-            <div className={styles.calendarHeader}>
-                <div className={styles.angles} onClick={handleLeftAngle}>
-                    Previous
-                </div>
-                <div className={styles.month}>
-                    {luxonDate.toLocaleString({
-                        month: 'long',
-                        year: 'numeric',
-                    })}
-                </div>
-                <div className={styles.angles} onClick={handleRightAngle}>
-                    Next
-                </div>
-            </div>
-            <Month
-                days={calendarList}
-                handleClick={handleClick}
-                clickedDate={clickedDate}
-            />
-        </div>
-    )
+export function DatePicker({
+  value,
+  defaultValue,
+  onChange,
+  minDate,
+  maxDate,
+  disabledDates,
+  locale,
+  weekStartsOn,
+  className,
+  'aria-label': ariaLabel = 'Date picker',
+  header,
+  footer,
+}: DatePickerProps) {
+  return (
+    <CalendarProvider
+      value={value}
+      defaultValue={defaultValue}
+      onChange={onChange}
+      minDate={minDate}
+      maxDate={maxDate}
+      disabledDates={disabledDates}
+      locale={locale}
+      weekStartsOn={weekStartsOn}
+    >
+      <div
+        className={clsx(
+          'inline-block rounded-xl border border-gray-200 bg-white p-4 shadow-lg',
+          className
+        )}
+        role="application"
+        aria-label={ariaLabel}
+      >
+        {header ?? <CalendarHeader />}
+        <MonthGrid />
+        {footer}
+      </div>
+    </CalendarProvider>
+  );
 }
 
-export default DatePicker
+export default DatePicker;

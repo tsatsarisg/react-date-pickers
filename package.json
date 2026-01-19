@@ -1,58 +1,100 @@
 {
-    "name": "@tsatsarisg/react-date-pickers",
-    "version": "1.1.5",
-    "description": "A collection of reusable React Date pickers",
-    "main": "dist/index.js",
-    "types": "dist/types/index.d.ts",
-    "keywords": [
-        "react",
-        "date picker",
-        "react datepicker",
-        "calendar",
-        "date",
-        "datetime"
-    ],
-    "author": "George Tsatsaris",
-    "license": "ISC",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/tsatsarisg/react-date-pickers.git"
+  "name": "@tsatsarisg/react-date-pickers",
+  "version": "2.0.0",
+  "description": "A collection of modern, accessible, and extensible React Date pickers",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
-    "publishConfig": {
-        "access": "public"
-    },
-    "scripts": {
-        "dev": "rollup -c --watch",
-        "build": "rollup -c"
-    },
-    "files": [
-        "dist"
-    ],
-    "dependencies": {
-        "luxon": "^3.3.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
-    },
-    "devDependencies": {
-        "@rollup/plugin-node-resolve": "^15.2.3",
-        "@rollup/plugin-terser": "^0.4.4",
-        "@types/css-modules": "^1.0.5",
-        "@types/luxon": "^3.3.0",
-        "@types/node": "^16.18.36",
-        "@types/react": "^18.2.12",
-        "@types/react-dom": "^18.2.5",
-        "autoprefixer": "^10.4.19",
-        "postcss": "^8.4.38",
-        "rollup": "^2.79.1",
-        "rollup-plugin-peer-deps-external": "^2.2.4",
-        "rollup-plugin-postcss": "^4.0.2",
-        "rollup-plugin-terser": "^7.0.2",
-        "rollup-plugin-typescript2": "^0.36.0",
-        "tailwindcss": "^3.4.4",
-        "typescript": "^4.9.5"
-    },
-    "peerDependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
-    }
+    "./styles.css": "./dist/styles.css"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "react",
+    "date picker",
+    "react datepicker",
+    "calendar",
+    "date",
+    "datetime",
+    "accessible",
+    "headless"
+  ],
+  "author": "George Tsatsaris",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsatsarisg/react-date-pickers.git"
+  },
+  "homepage": "https://github.com/tsatsarisg/react-date-pickers#readme",
+  "bugs": {
+    "url": "https://github.com/tsatsarisg/react-date-pickers/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "happy-dom": "^15.11.7",
+    "postcss": "^8.4.49",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

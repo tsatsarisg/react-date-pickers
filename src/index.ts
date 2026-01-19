@@ -1,9 +1,41 @@
-import './tailwind.css'
+// Components
+export { DatePicker, type DatePickerProps } from './components/DatePicker';
+export { DateRangePicker, type DateRangePickerProps } from './components/DateRangePicker';
 
-import DoubleDatePicker, {
-    DoubleDatePickerProps,
-} from './components/DoubleDatePicker/DoubleDatePicker'
-import DatePicker, { DatePickerProps } from './components/DatePicker/DatePicker'
+// Building blocks for custom implementations
+export { Day } from './components/Day';
+export { MonthGrid } from './components/MonthGrid';
+export { CalendarHeader } from './components/CalendarHeader';
 
-export { DoubleDatePicker, DatePicker }
-export type { DoubleDatePickerProps, DatePickerProps }
+// Context for advanced customization
+export { CalendarProvider, useCalendarContext } from './context/CalendarContext';
+
+// Types
+export type {
+  CalendarDate,
+  DateRange,
+  LocaleConfig,
+  WeekDay,
+  CalendarBaseProps,
+  DayProps,
+  MonthGridProps,
+  CalendarHeaderProps,
+} from './types';
+
+// Utility functions
+export {
+  createDate,
+  today,
+  isSameDay,
+  isSameMonth,
+  isBefore,
+  isAfter,
+  isWithinRange,
+  addMonths,
+  addDays,
+  getDaysInMonth,
+  formatDate,
+  formatMonthYear,
+  toISOString,
+  fromISOString,
+} from './utils/date';
