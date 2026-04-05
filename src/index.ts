@@ -1,6 +1,6 @@
 // Components
-export { DatePicker, type DatePickerProps } from './components/DatePicker';
-export { DateRangePicker, type DateRangePickerProps } from './components/DateRangePicker';
+export { DatePicker } from './components/DatePicker';
+export { DateRangePicker } from './components/DateRangePicker';
 
 // Building blocks for custom implementations
 export { Day } from './components/Day';
@@ -17,9 +17,13 @@ export type {
   LocaleConfig,
   WeekDay,
   CalendarBaseProps,
+  CalendarClassNames,
+  DayState,
   DayProps,
   MonthGridProps,
   CalendarHeaderProps,
+  DatePickerProps,
+  DateRangePickerProps,
 } from './types';
 
 // Utility functions
@@ -38,4 +42,6 @@ export {
   formatMonthYear,
   toISOString,
   fromISOString,
+  toDate,
+  fromDate,
 } from './utils/date';

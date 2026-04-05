@@ -1,40 +1,7 @@
-import { type ReactNode } from 'react';
 import { CalendarProvider } from '../../context/CalendarContext';
 import { CalendarHeader } from '../CalendarHeader';
 import { MonthGrid } from '../MonthGrid';
-import { type CalendarDate, type LocaleConfig, type WeekDay } from '../../types';
-import { clsx } from 'clsx';
-
-export interface DatePickerProps {
-  /** Currently selected date (controlled) */
-  value?: CalendarDate | null;
-  /** Default date (uncontrolled) */
-  defaultValue?: CalendarDate;
-  /** Called when date changes */
-  onChange?: (date: CalendarDate | null) => void;
-  /** Minimum selectable date */
-  minDate?: CalendarDate;
-  /** Maximum selectable date */
-  maxDate?: CalendarDate;
-  /** Array of disabled dates */
-  disabledDates?: CalendarDate[];
-  /** Locale settings */
-  locale?: Partial<LocaleConfig>;
-  /** Day the week starts on (0 = Sunday, 1 = Monday, etc.) */
-  weekStartsOn?: WeekDay;
-  /** Additional class name */
-  className?: string;
-  /** Accessible label */
-  'aria-label'?: string;
-  /** Custom header component */
-  header?: ReactNode;
-  /** Custom footer component */
-  footer?: ReactNode;
-  /** Unique identifier for form association */
-  id?: string;
-  /** Whether the picker is disabled */
-  disabled?: boolean;
-}
+import { type DatePickerProps } from '../../types';
 
 export function DatePicker({
   value,
@@ -51,6 +18,8 @@ export function DatePicker({
   footer,
   id,
   disabled = false,
+  classNames,
+  renderDay,
 }: DatePickerProps) {
   return (
     <CalendarProvider
@@ -65,18 +34,28 @@ export function DatePicker({
     >
       <div
         id={id}
-        className={clsx(
-          'inline-block rounded-xl border border-gray-200 bg-white p-4 shadow-lg',
-          disabled && 'pointer-events-none opacity-50',
-          className
-        )}
-        role="application"
+        className={classNames?.root ?? className}
+        role="group"
         aria-label={ariaLabel}
-        aria-disabled={disabled}
+        aria-disabled={disabled || undefined}
+        data-disabled={disabled || undefined}
       >
-        {header ?? <CalendarHeader />}
-        <MonthGrid />
-        {footer}
+        {header ?? (
+          <CalendarHeader
+            className={classNames?.header}
+            navButtonClassName={classNames?.navButton}
+            captionClassName={classNames?.caption}
+          />
+        )}
+        <MonthGrid
+          className={classNames?.grid}
+          weekdaysClassName={classNames?.weekdays}
+          weekdayClassName={classNames?.weekday}
+          daysClassName={classNames?.days}
+          dayClassName={classNames?.day}
+          renderDay={renderDay}
+        />
+        {footer && <div className={classNames?.footer}>{footer}</div>}
       </div>
     </CalendarProvider>
   );

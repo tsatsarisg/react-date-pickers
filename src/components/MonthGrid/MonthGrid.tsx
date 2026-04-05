@@ -1,31 +1,45 @@
+import { useMemo } from 'react';
 import { Day } from '../Day';
 import { useCalendarContext } from '../../context/CalendarContext';
-import { getWeekdayNames, toISOString } from '../../utils/date';
-import { clsx } from 'clsx';
+import { generateCalendarDays, getWeekdayNames, toISOString } from '../../utils/date';
+import { type MonthGridProps } from '../../types';
 
-interface MonthGridProps {
-  className?: string;
-}
-
-export function MonthGrid({ className }: MonthGridProps) {
+export function MonthGrid({
+  className,
+  month,
+  dayClassName,
+  weekdaysClassName,
+  weekdayClassName,
+  daysClassName,
+  renderDay,
+}: MonthGridProps) {
   const { calendarDays, locale } = useCalendarContext();
-  const weekdayNames = getWeekdayNames(locale);
+  const weekdayNames = useMemo(() => getWeekdayNames(locale), [locale]);
+
+  // Use override month or context calendar days
+  const days = useMemo(() => {
+    if (month) {
+      return generateCalendarDays(month, locale.weekStartsOn);
+    }
+    return calendarDays;
+  }, [month, locale.weekStartsOn, calendarDays]);
 
   return (
     <div
-      className={clsx('w-full', className)}
+      className={className}
       role="grid"
       aria-label="Calendar"
     >
       {/* Weekday headers */}
       <div
-        className="mb-2 grid grid-cols-7 gap-1"
+        className={weekdaysClassName}
         role="row"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}
       >
         {weekdayNames.map((dayName, index) => (
           <div
-            key={`weekday-${index}`}
-            className="flex h-10 w-10 items-center justify-center text-xs font-medium text-gray-500"
+            key={`weekday-${String(index)}`}
+            className={weekdayClassName}
             role="columnheader"
             aria-label={dayName}
           >
@@ -36,11 +50,18 @@ export function MonthGrid({ className }: MonthGridProps) {
 
       {/* Calendar days */}
       <div
-        className="grid grid-cols-7 gap-1"
+        className={daysClassName}
         role="rowgroup"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}
       >
-        {calendarDays.map((date) => (
-          <Day key={toISOString(date)} date={date} />
+        {days.map((date) => (
+          <Day
+            key={toISOString(date)}
+            date={date}
+            className={dayClassName}
+            overrideCurrentMonth={month}
+            renderDay={renderDay}
+          />
         ))}
       </div>
     </div>

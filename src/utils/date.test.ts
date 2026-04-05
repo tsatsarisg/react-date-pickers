@@ -19,6 +19,8 @@ import {
   formatMonthYear,
   formatDate,
   getWeekdayNames,
+  toDate,
+  fromDate,
 } from './date';
 
 describe('date utilities', () => {
@@ -173,6 +175,22 @@ describe('date utilities', () => {
 
     it('returns null for invalid string', () => {
       expect(fromISOString('invalid')).toBeNull();
+    });
+
+    it('returns null for invalid month', () => {
+      expect(fromISOString('2026-13-01')).toBeNull();
+      expect(fromISOString('2026-00-01')).toBeNull();
+    });
+
+    it('returns null for invalid day', () => {
+      expect(fromISOString('2026-01-32')).toBeNull();
+      expect(fromISOString('2026-02-30')).toBeNull();
+      expect(fromISOString('2026-01-00')).toBeNull();
+    });
+
+    it('validates leap year dates', () => {
+      expect(fromISOString('2024-02-29')).toEqual({ year: 2024, month: 2, day: 29 });
+      expect(fromISOString('2025-02-29')).toBeNull();
     });
 
     it('pads single digit month and day', () => {
@@ -369,8 +387,32 @@ describe('date utilities', () => {
       // Find a month that starts on a specific day
       const month = createDate(2026, 6, 1); // June 1, 2026 is a Monday
       const days = generateCalendarDays(month, 1);
-      expect(days[0].month).toBe(6);
-      expect(days[0].day).toBe(1);
+      expect(days[0]?.month).toBe(6);
+      expect(days[0]?.day).toBe(1);
+    });
+  });
+
+  describe('toDate', () => {
+    it('converts CalendarDate to native Date', () => {
+      const calDate = createDate(2026, 1, 15);
+      const nativeDate = toDate(calDate);
+      expect(nativeDate.getFullYear()).toBe(2026);
+      expect(nativeDate.getMonth()).toBe(0); // January = 0
+      expect(nativeDate.getDate()).toBe(15);
+    });
+  });
+
+  describe('fromDate', () => {
+    it('converts native Date to CalendarDate', () => {
+      const nativeDate = new Date(2026, 0, 15); // January 15, 2026
+      const calDate = fromDate(nativeDate);
+      expect(calDate).toEqual({ year: 2026, month: 1, day: 15 });
+    });
+
+    it('roundtrips with toDate', () => {
+      const original = createDate(2026, 6, 30);
+      const roundTripped = fromDate(toDate(original));
+      expect(roundTripped).toEqual(original);
     });
   });
 });

@@ -174,5 +174,23 @@ export function fromISOString(str: string): CalendarDate | null {
   if (!match) return null;
   const [, yearStr, monthStr, dayStr] = match;
   if (!yearStr || !monthStr || !dayStr) return null;
-  return createDate(parseInt(yearStr, 10), parseInt(monthStr, 10), parseInt(dayStr, 10));
+
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+  const day = parseInt(dayStr, 10);
+
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > getDaysInMonth(year, month)) return null;
+
+  return createDate(year, month, day);
+}
+
+/** Convert a CalendarDate to a native Date (at midnight, local time) */
+export function toDate(date: CalendarDate): Date {
+  return new Date(date.year, date.month - 1, date.day);
+}
+
+/** Convert a native Date to a CalendarDate */
+export function fromDate(date: Date): CalendarDate {
+  return createDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 }

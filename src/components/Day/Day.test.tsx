@@ -1,13 +1,23 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Day } from './Day';
+import { MonthGrid } from '../MonthGrid';
 import { CalendarProvider } from '../../context/CalendarContext';
+import { type CalendarDate } from '../../types';
 import { createDate } from '../../utils/date';
 
-function renderDay(date: any, providerProps = {}) {
+function renderDay(date: CalendarDate, providerProps = {}) {
   return render(
     <CalendarProvider {...providerProps}>
       <Day date={date} />
+    </CalendarProvider>
+  );
+}
+
+function renderGrid(providerProps = {}) {
+  return render(
+    <CalendarProvider {...providerProps}>
+      <MonthGrid />
     </CalendarProvider>
   );
 }
@@ -17,14 +27,14 @@ describe('Day', () => {
 
   describe('Rendering', () => {
     it('renders the day button', () => {
-      renderDay(testDate);
+      renderDay(testDate, { defaultValue: createDate(2026, 1, 1) });
       const button = screen.getByTestId('day_2026-01-15');
       expect(button).toBeInTheDocument();
       expect(button).toHaveTextContent('15');
     });
 
     it('renders with correct test id', () => {
-      renderDay(createDate(2026, 3, 5));
+      renderDay(createDate(2026, 3, 5), { defaultValue: createDate(2026, 3, 1) });
       expect(screen.getByTestId('day_2026-03-05')).toBeInTheDocument();
     });
   });
@@ -44,6 +54,7 @@ describe('Day', () => {
       const onChange = vi.fn();
       renderDay(testDate, {
         onChange,
+        defaultValue: createDate(2026, 1, 1),
         minDate: createDate(2026, 1, 20),
       });
 
@@ -56,48 +67,47 @@ describe('Day', () => {
 
   describe('Keyboard Navigation', () => {
     it('moves focus left with ArrowLeft', () => {
-      const { container } = renderDay(testDate, {
-        defaultValue: createDate(2026, 1, 1),
-      });
+      renderGrid({ defaultValue: testDate });
 
       const button = screen.getByTestId('day_2026-01-15');
       fireEvent.keyDown(button, { key: 'ArrowLeft' });
 
-      // Focus should move to previous day (though we can't test actual DOM focus easily)
-      expect(container).toBeInTheDocument();
+      const day14 = screen.getByTestId('day_2026-01-14');
+      expect(day14).toHaveAttribute('tabindex', '0');
+      expect(button).toHaveAttribute('tabindex', '-1');
     });
 
     it('moves focus right with ArrowRight', () => {
-      const { container } = renderDay(testDate, {
-        defaultValue: createDate(2026, 1, 1),
-      });
+      renderGrid({ defaultValue: testDate });
 
       const button = screen.getByTestId('day_2026-01-15');
       fireEvent.keyDown(button, { key: 'ArrowRight' });
 
-      expect(container).toBeInTheDocument();
+      const day16 = screen.getByTestId('day_2026-01-16');
+      expect(day16).toHaveAttribute('tabindex', '0');
+      expect(button).toHaveAttribute('tabindex', '-1');
     });
 
     it('moves focus up with ArrowUp', () => {
-      const { container } = renderDay(testDate, {
-        defaultValue: createDate(2026, 1, 1),
-      });
+      renderGrid({ defaultValue: testDate });
 
       const button = screen.getByTestId('day_2026-01-15');
       fireEvent.keyDown(button, { key: 'ArrowUp' });
 
-      expect(container).toBeInTheDocument();
+      const day8 = screen.getByTestId('day_2026-01-08');
+      expect(day8).toHaveAttribute('tabindex', '0');
+      expect(button).toHaveAttribute('tabindex', '-1');
     });
 
     it('moves focus down with ArrowDown', () => {
-      const { container } = renderDay(testDate, {
-        defaultValue: createDate(2026, 1, 1),
-      });
+      renderGrid({ defaultValue: testDate });
 
       const button = screen.getByTestId('day_2026-01-15');
       fireEvent.keyDown(button, { key: 'ArrowDown' });
 
-      expect(container).toBeInTheDocument();
+      const day22 = screen.getByTestId('day_2026-01-22');
+      expect(day22).toHaveAttribute('tabindex', '0');
+      expect(button).toHaveAttribute('tabindex', '-1');
     });
 
     it('selects date with Enter key', () => {
@@ -128,7 +138,7 @@ describe('Day', () => {
 
     it('does nothing for other keys', () => {
       const onChange = vi.fn();
-      renderDay(testDate, { onChange });
+      renderDay(testDate, { onChange, defaultValue: createDate(2026, 1, 1) });
 
       const button = screen.getByTestId('day_2026-01-15');
       fireEvent.keyDown(button, { key: 'a' });
@@ -140,11 +150,13 @@ describe('Day', () => {
   describe('Visual States', () => {
     it('applies disabled state correctly', () => {
       renderDay(testDate, {
+        defaultValue: createDate(2026, 1, 1),
         minDate: createDate(2026, 1, 20),
       });
 
       const button = screen.getByTestId('day_2026-01-15');
       expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('data-disabled');
     });
 
     it('applies selected state in single date mode', () => {
@@ -154,6 +166,7 @@ describe('Day', () => {
 
       const button = screen.getByTestId('day_2026-01-15');
       expect(button).toHaveAttribute('aria-selected', 'true');
+      expect(button).toHaveAttribute('data-selected');
     });
 
     it('applies range start state', () => {
@@ -165,8 +178,7 @@ describe('Day', () => {
       });
 
       const button = screen.getByTestId('day_2026-01-15');
-      expect(button).toBeInTheDocument();
-      // Range start has specific styling
+      expect(button).toHaveAttribute('data-range-start');
     });
 
     it('applies range end state', () => {
@@ -178,7 +190,7 @@ describe('Day', () => {
       });
 
       const button = screen.getByTestId('day_2026-01-15');
-      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute('data-range-end');
     });
 
     it('applies in-range state', () => {
@@ -191,41 +203,22 @@ describe('Day', () => {
       });
 
       const button = screen.getByTestId('day_2026-01-15');
-      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute('data-in-range');
     });
 
-    it('shows today indicator', () => {
-      const todayDate = new Date();
-      const today = createDate(
-        todayDate.getFullYear(),
-        todayDate.getMonth() + 1,
-        todayDate.getDate()
-      );
-
-      renderDay(today);
-
-      const button = screen.getByTestId(
-        `day_${today.year.toString().padStart(4, '0')}-${today.month
-          .toString()
-          .padStart(2, '0')}-${today.day.toString().padStart(2, '0')}`
-      );
-      expect(button).toBeInTheDocument();
-    });
-
-    it('applies outside month styling', () => {
-      // Day from previous/next month
+    it('applies outside month state', () => {
       renderDay(createDate(2025, 12, 31), {
         defaultValue: createDate(2026, 1, 15),
       });
 
       const button = screen.getByTestId('day_2025-12-31');
-      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute('data-outside');
     });
   });
 
   describe('Accessibility', () => {
     it('has button type', () => {
-      renderDay(testDate);
+      renderDay(testDate, { defaultValue: createDate(2026, 1, 1) });
       const button = screen.getByTestId('day_2026-01-15');
       expect(button).toHaveAttribute('type', 'button');
     });
@@ -236,46 +229,61 @@ describe('Day', () => {
       expect(button).toHaveAttribute('aria-selected', 'true');
     });
 
-    it('is keyboard navigable', () => {
-      renderDay(testDate);
+    it('has role gridcell', () => {
+      renderDay(testDate, { defaultValue: createDate(2026, 1, 1) });
       const button = screen.getByTestId('day_2026-01-15');
-      
-      // Should be focusable
-      expect(button.tagName).toBe('BUTTON');
+      expect(button).toHaveAttribute('role', 'gridcell');
+    });
+
+    it('has internationalized aria-label', () => {
+      renderDay(testDate, { defaultValue: createDate(2026, 1, 1) });
+      const button = screen.getByTestId('day_2026-01-15');
+      expect(button).toHaveAttribute('aria-label');
+      expect(button.getAttribute('aria-label')).toContain('15');
     });
   });
 
   describe('Month Navigation on Arrow Keys', () => {
     it('navigates to previous month when arrowing left from first day', () => {
       const firstDay = createDate(2026, 2, 1);
-      renderDay(firstDay, { defaultValue: firstDay });
+      renderGrid({ defaultValue: firstDay });
 
       const button = screen.getByTestId('day_2026-02-01');
-      
-      // Arrow left should go to previous month
       fireEvent.keyDown(button, { key: 'ArrowLeft' });
-      
-      // The component should handle month change
-      expect(button).toBeInTheDocument();
+
+      // Jan 31 should now be focused (month changed)
+      const jan31 = screen.getByTestId('day_2026-01-31');
+      expect(jan31).toHaveAttribute('tabindex', '0');
     });
 
     it('navigates to next month when arrowing right from last day', () => {
       const lastDay = createDate(2026, 1, 31);
-      renderDay(lastDay, { defaultValue: lastDay });
+      renderGrid({ defaultValue: lastDay });
 
       const button = screen.getByTestId('day_2026-01-31');
-      
       fireEvent.keyDown(button, { key: 'ArrowRight' });
-      
-      expect(button).toBeInTheDocument();
+
+      const feb1 = screen.getByTestId('day_2026-02-01');
+      expect(feb1).toHaveAttribute('tabindex', '0');
     });
   });
 
-  describe('Custom className', () => {
-    it('applies custom className prop', () => {
-      renderDay(testDate, { className: 'custom-day' });
-      const button = screen.getByTestId('day_2026-01-15');
-      expect(button).toBeInTheDocument();
+  describe('renderDay', () => {
+    it('uses custom renderDay when provided', () => {
+      render(
+        <CalendarProvider defaultValue={createDate(2026, 1, 1)}>
+          <Day
+            date={testDate}
+            renderDay={(date, state) => (
+              <span data-testid="custom-day">
+                {date.day} {state.isToday ? '(today)' : ''}
+              </span>
+            )}
+          />
+        </CalendarProvider>
+      );
+
+      expect(screen.getByTestId('custom-day')).toBeInTheDocument();
     });
   });
 });

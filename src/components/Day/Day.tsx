@@ -1,17 +1,9 @@
-import { useCallback, useMemo, type KeyboardEvent } from 'react';
-import { clsx } from 'clsx';
-import { type CalendarDate } from '../../types';
-import { isSameMonth, today, isSameDay, toISOString, addDays, addMonths, getDaysInMonth, createDate, isDateDisabled } from '../../utils/date';
+import { useCallback, useMemo, useRef, useEffect, type KeyboardEvent } from 'react';
+import { type CalendarDate, type DayProps, type DayState } from '../../types';
+import { isSameMonth, isSameDay, toISOString, addDays, addMonths, getDaysInMonth, createDate, isDateDisabled } from '../../utils/date';
 import { useCalendarContext } from '../../context/CalendarContext';
 
-interface DayProps {
-  date: CalendarDate;
-  className?: string;
-  /** Override the current month for display purposes (used in dual-month views) */
-  overrideCurrentMonth?: CalendarDate;
-}
-
-export function Day({ date, className, overrideCurrentMonth }: DayProps) {
+export function Day({ date, className, overrideCurrentMonth, renderDay }: DayProps) {
   const {
     currentMonth,
     selectDate,
@@ -27,17 +19,27 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
     locale,
     minDate,
     maxDate,
+    todayDate,
   } = useCalendarContext();
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const displayMonth = overrideCurrentMonth ?? currentMonth;
   const isCurrentMonth = isSameMonth(date, displayMonth);
-  const isToday = isSameDay(date, today());
+  const isToday = isSameDay(date, todayDate);
   const disabled = isDisabled(date);
   const selected = isSelected(date);
   const inRange = isInSelectedRange(date);
   const rangeStart = isRangeStart(date);
   const rangeEnd = isRangeEnd(date);
   const isFocused = isSameDay(date, focusedDate);
+
+  // Move DOM focus when this day becomes the focused date
+  useEffect(() => {
+    if (isFocused) {
+      buttonRef.current?.focus();
+    }
+  }, [isFocused]);
 
   // Internationalized aria-label
   const ariaLabel = useMemo(() => {
@@ -69,7 +71,7 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLButtonElement>) => {
-      let newFocusedDate: CalendarDate | null = null;
+      let newFocusedDate: CalendarDate;
 
       switch (event.key) {
         case 'ArrowLeft':
@@ -85,17 +87,13 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
           newFocusedDate = clampDate(addDays(date, 7));
           break;
         case 'Home':
-          // First day of month
           newFocusedDate = clampDate(createDate(date.year, date.month, 1));
           break;
         case 'End':
-          // Last day of month
           newFocusedDate = clampDate(createDate(date.year, date.month, getDaysInMonth(date.year, date.month)));
           break;
         case 'PageUp':
-          // Same day, previous month (or closest valid date)
           if (event.shiftKey) {
-            // Previous year
             newFocusedDate = clampDate(createDate(date.year - 1, date.month, Math.min(date.day, getDaysInMonth(date.year - 1, date.month))));
           } else {
             const prevMonth = addMonths(date, -1);
@@ -104,9 +102,7 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
           }
           break;
         case 'PageDown':
-          // Same day, next month (or closest valid date)
           if (event.shiftKey) {
-            // Next year
             newFocusedDate = clampDate(createDate(date.year + 1, date.month, Math.min(date.day, getDaysInMonth(date.year + 1, date.month))));
           } else {
             const nextMonth = addMonths(date, 1);
@@ -123,44 +119,32 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
           return;
       }
 
-      if (newFocusedDate) {
-        event.preventDefault();
-        setFocusedDate(newFocusedDate);
-        if (!isSameMonth(newFocusedDate, currentMonth)) {
-          setCurrentMonth(newFocusedDate);
-        }
+      event.preventDefault();
+      setFocusedDate(newFocusedDate);
+      if (!isSameMonth(newFocusedDate, currentMonth)) {
+        setCurrentMonth(newFocusedDate);
       }
     },
     [date, handleClick, setFocusedDate, setCurrentMonth, currentMonth, clampDate]
   );
 
+  const state: DayState = {
+    isToday,
+    isSelected: selected,
+    isDisabled: disabled,
+    isOutsideMonth: !isCurrentMonth,
+    isFocused,
+    isRangeStart: rangeStart,
+    isRangeEnd: rangeEnd,
+    isInRange: inRange,
+  };
+
   return (
     <button
+      ref={buttonRef}
       type="button"
       data-testid={`day_${toISOString(date)}`}
-      className={clsx(
-        // Base styles
-        'relative flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-        // Disabled state
-        disabled && 'cursor-not-allowed opacity-30',
-        // Outside current month
-        !isCurrentMonth && 'text-gray-400',
-        // Today indicator
-        isToday && !selected && 'ring-1 ring-blue-500',
-        // Selected state (single date)
-        selected && !isRangeMode && 'bg-blue-600 text-white hover:bg-blue-700',
-        // Range selection states
-        rangeStart && 'bg-blue-600 text-white rounded-l-lg rounded-r-none',
-        rangeEnd && 'bg-blue-600 text-white rounded-r-lg rounded-l-none',
-        inRange && 'bg-blue-100 rounded-none',
-        // Hover state
-        !disabled && !selected && !rangeStart && !rangeEnd && !inRange && 
-          'hover:bg-gray-100',
-        // Default text color
-        isCurrentMonth && !selected && !rangeStart && !rangeEnd && 'text-gray-900',
-        className
-      )}
+      className={className}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       disabled={disabled}
@@ -169,8 +153,17 @@ export function Day({ date, className, overrideCurrentMonth }: DayProps) {
       aria-selected={selected || rangeStart || rangeEnd}
       aria-disabled={disabled}
       role="gridcell"
+      data-today={isToday || undefined}
+      data-selected={selected || undefined}
+      data-disabled={disabled || undefined}
+      data-outside={!isCurrentMonth || undefined}
+      data-range-start={rangeStart || undefined}
+      data-range-end={rangeEnd || undefined}
+      data-in-range={inRange || undefined}
+      data-focused={isFocused || undefined}
+      data-range-mode={isRangeMode || undefined}
     >
-      {date.day}
+      {renderDay ? renderDay(date, state) : date.day}
     </button>
   );
 }

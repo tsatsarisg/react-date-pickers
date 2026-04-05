@@ -24,16 +24,17 @@ interface CalendarContextValue {
   selectedDate: CalendarDate | null;
   selectedRange: DateRange;
   isRangeMode: boolean;
-  
+  todayDate: CalendarDate;
+
   // Configuration
   minDate?: CalendarDate;
   maxDate?: CalendarDate;
   disabledDates: CalendarDate[];
   locale: LocaleConfig;
-  
+
   // Computed
   calendarDays: CalendarDate[];
-  
+
   // Actions
   setCurrentMonth: (date: CalendarDate) => void;
   goToPreviousMonth: () => void;
@@ -102,26 +103,27 @@ export function CalendarProvider({
   weekStartsOn = 0,
 }: CalendarProviderProps) {
   const isRangeMode = rangeValue !== undefined || defaultRangeValue !== undefined || onRangeChange !== undefined;
-  
-  const initialDate = value ?? defaultValue ?? today();
-  
+
+  const initialDate = value ?? defaultValue ?? rangeValue?.start ?? defaultRangeValue?.start ?? today();
+
+  // Compute today once per provider render instead of per-Day
+  const todayDate = useMemo(() => today(), []);
+
   // Internal state for uncontrolled mode
-  const [internalSelectedDate, setInternalSelectedDate] = useState<CalendarDate | null>(
-    defaultValue ?? null
+  const [internalSelectedDate, setInternalSelectedDate] = useState(defaultValue ?? null);
+  const [internalRange, setInternalRange] = useState(
+    defaultRangeValue ?? { start: null, end: null } as DateRange
   );
-  const [internalRange, setInternalRange] = useState<DateRange>(
-    defaultRangeValue ?? { start: null, end: null }
-  );
-  const [currentMonth, setCurrentMonth] = useState<CalendarDate>(initialDate);
-  const [focusedDate, setFocusedDate] = useState<CalendarDate>(initialDate);
-  
+  const [currentMonth, setCurrentMonth] = useState(initialDate);
+  const [focusedDate, setFocusedDate] = useState(initialDate);
+
   // Determine if controlled or uncontrolled
   const isControlled = value !== undefined;
   const isRangeControlled = rangeValue !== undefined;
-  
+
   const selectedDate = isControlled ? value : internalSelectedDate;
   const selectedRange = isRangeControlled ? rangeValue : internalRange;
-  
+
   const locale: LocaleConfig = useMemo(() => ({
     locale: localeConfig?.locale ?? 'en-US',
     weekStartsOn: localeConfig?.weekStartsOn ?? weekStartsOn,
@@ -129,84 +131,84 @@ export function CalendarProvider({
     dayNames: localeConfig?.dayNames,
     dayNamesShort: localeConfig?.dayNamesShort,
   }), [localeConfig, weekStartsOn]);
-  
+
   const calendarDays = useMemo(
     () => generateCalendarDays(currentMonth, locale.weekStartsOn),
     [currentMonth, locale.weekStartsOn]
   );
-  
+
   const goToPreviousMonth = useCallback(() => {
     setCurrentMonth((prev) => addMonths(prev, -1));
   }, []);
-  
+
   const goToNextMonth = useCallback(() => {
     setCurrentMonth((prev) => addMonths(prev, 1));
   }, []);
-  
+
   const isDisabled = useCallback(
     (date: CalendarDate) => isDateDisabled(date, minDate, maxDate, disabledDates),
     [minDate, maxDate, disabledDates]
   );
-  
+
   const isSelected = useCallback(
     (date: CalendarDate) => isSameDay(date, selectedDate),
     [selectedDate]
   );
-  
+
   const isInSelectedRange = useCallback(
     (date: CalendarDate) => {
       if (!selectedRange.start || !selectedRange.end) return false;
       const start = selectedRange.start;
       const end = selectedRange.end;
-      
+
       const dateValue = date.year * 10000 + date.month * 100 + date.day;
       const startValue = start.year * 10000 + start.month * 100 + start.day;
       const endValue = end.year * 10000 + end.month * 100 + end.day;
-      
+
       return dateValue > startValue && dateValue < endValue;
     },
     [selectedRange]
   );
-  
+
   const isRangeStart = useCallback(
     (date: CalendarDate) => isSameDay(date, selectedRange.start),
     [selectedRange.start]
   );
-  
+
   const isRangeEnd = useCallback(
     (date: CalendarDate) => isSameDay(date, selectedRange.end),
     [selectedRange.end]
   );
-  
+
   const selectDate = useCallback(
     (date: CalendarDate) => {
       if (isDisabled(date)) return;
-      
+
       if (isRangeMode) {
         let newRange: DateRange;
-        
-        if (!selectedRange.start || (selectedRange.start && selectedRange.end)) {
+
+        if (!selectedRange.start || selectedRange.end) {
           // Start new range
           newRange = { start: date, end: null };
         } else {
           // Complete the range
           const startValue = selectedRange.start.year * 10000 + selectedRange.start.month * 100 + selectedRange.start.day;
           const dateValue = date.year * 10000 + date.month * 100 + date.day;
-          
+
           if (dateValue < startValue) {
             newRange = { start: date, end: selectedRange.start };
           } else {
             newRange = { start: selectedRange.start, end: date };
           }
         }
-        
+
         if (!isRangeControlled) {
           setInternalRange(newRange);
         }
         onRangeChange?.(newRange);
       } else {
         const newValue = isSameDay(date, selectedDate) ? null : date;
-        
+
         if (!isControlled) {
           setInternalSelectedDate(newValue);
         }
@@ -215,7 +217,7 @@ export function CalendarProvider({
     },
     [isRangeMode, selectedRange, selectedDate, isControlled, isRangeControlled, onChange, onRangeChange, isDisabled]
   );
-  
+
   const contextValue = useMemo<CalendarContextValue>(
     () => ({
       currentMonth,
@@ -223,6 +225,7 @@ export function CalendarProvider({
       selectedDate: selectedDate ?? null,
       selectedRange,
       isRangeMode,
+      todayDate,
       minDate,
       maxDate,
       disabledDates,
@@ -245,6 +248,7 @@ export function CalendarProvider({
       selectedDate,
       selectedRange,
       isRangeMode,
+      todayDate,
       minDate,
       maxDate,
       disabledDates,
@@ -260,7 +264,7 @@ export function CalendarProvider({
       isRangeEnd,
     ]
   );
-  
+
   return (
     <CalendarContext.Provider value={contextValue}>
       {children}

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { CalendarProvider, useCalendarContext } from './CalendarContext';
 import { createDate, today } from '../utils/date';
 import type { ReactNode } from 'react';
